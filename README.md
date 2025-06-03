@@ -60,16 +60,4 @@ La API implementa autenticación con **JWT** y permite dos tipos de usuarios:
 
 ---
 
-### Imagenes
-
-![Metodo GET ](https://imgur.com/o3SdRfA)
-
-![Metodo GET by ID ](https://imgur.com/NGh81YD)
-
-![Metodo POST - Protegido ](https://imgur.com/Iswp3zS)
-
-![Metodo DELETE - Protegido ](https://imgur.com/b2Y0VXJ)
-
-
-
 
