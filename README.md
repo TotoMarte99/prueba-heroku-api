@@ -6,14 +6,14 @@
 
 ##  Características principales
 
-- ✅ Crear, obtener, actualizar y eliminar máquinas.
-- 🔎 Búsqueda por **marca** con filtros.
-- 🔐 Autenticación JWT (usuarios y administradores).
-- 👥 Registro e inicio de sesión de usuarios.
-- ⚙️ Control de acceso según rol (usuario/admin).
-- 🧪 Validaciones básicas en los datos de entrada.
-- 📄 Documentación automática con **Swagger**.
-- 🧩 API versionada.
+-  Crear, obtener, actualizar y eliminar máquinas.
+-  Búsqueda por **marca** con filtros.
+-  Autenticación JWT (usuarios y administradores).
+-  Registro e inicio de sesión de usuarios.
+-  Control de acceso según rol (usuario/admin).
+-  Validaciones básicas en los datos de entrada.
+-  Documentación automática con **Swagger**.
+-  API versionada.
 
 ---
 
