@@ -22,7 +22,7 @@ namespace API_Maquinas.Controllers
             this.loginAuth = loginAuth;
         }
 
-        [Authorize(Roles = "usuario,admin")]
+       
         [HttpPost("login")]
         public async Task<ActionResult<Logins>> GetUsers(string username, string password)
         {
