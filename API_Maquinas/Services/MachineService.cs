@@ -8,17 +8,17 @@ using System.Text.RegularExpressions;
 
 namespace API_Maquinas.Services
 {
-    public class MaquinaService : IMaquinaService
+    public class MachineService : IMachineService
     {
         StoredContext _context;
 
-        public MaquinaService(StoredContext context)
+        public MachineService(StoredContext context)
         {
             _context = context;
         }
-        public async Task<MaquinaDTO> Add(MaquinaInsertDTO maquinaInsert)
+        public async Task<MachineDTO> Add(MachineInsertDTO maquinaInsert)
         {
-            var maquina = new Maquinas()
+            var maquina = new Machines()
             {
                 Marca = maquinaInsert.Marca,
                 Modelo = maquinaInsert.Modelo,
@@ -29,7 +29,7 @@ namespace API_Maquinas.Services
             await _context.AddRangeAsync(maquina);
             await _context.SaveChangesAsync();
 
-            var maquinaDto = new MaquinaDTO
+            var maquinaDto = new MachineDTO
             {
                 id = maquina.Id,
                 Marca = maquina.Marca,
@@ -41,11 +41,11 @@ namespace API_Maquinas.Services
             return maquinaDto;
         }
 
-        public async Task<IEnumerable<MaquinaDTO>> Search(string maquina)
+        public async Task<IEnumerable<MachineDTO>> Search(string maquina)
         {
             return await _context.Maquinas
                 .Where(m => m.Marca.Contains(maquina))
-                .Select(m => new MaquinaDTO
+                .Select(m => new MachineDTO
                 {
                     id = m.Id,
                     Marca = m.Marca,
@@ -58,13 +58,13 @@ namespace API_Maquinas.Services
             
         }
 
-        public async Task<MaquinaDTO> Delete(int id)
+        public async Task<MachineDTO> Delete(int id)
         {
             var maquina = await _context.Maquinas.FindAsync(id);
 
             if (maquina != null)
             {
-                var maquinaDto = new MaquinaDTO
+                var maquinaDto = new MachineDTO
                 {
                     id = maquina.Id,
                     Marca = maquina.Marca,
@@ -82,10 +82,10 @@ namespace API_Maquinas.Services
             return null;
         }
 
-        public async Task<IEnumerable<MaquinaDTO>> GetMaquina()
+        public async Task<IEnumerable<MachineDTO>> GetMaquina()
         {
 
-            return await _context.Maquinas.Select(b => new MaquinaDTO
+            return await _context.Maquinas.Select(b => new MachineDTO
             {
                 id = b.Id,
                 Marca = b.Marca,
@@ -96,13 +96,13 @@ namespace API_Maquinas.Services
             
         }
 
-        public async Task<MaquinaDTO> GetMaquinaID(int id)
+        public async Task<MachineDTO> GetMaquinaID(int id)
         {
             var maquina = await _context.Maquinas.FindAsync(id);
 
             if(maquina != null)
             {
-                var maquinaDto = new MaquinaDTO
+                var maquinaDto = new MachineDTO
                 {
                     id = maquina.Id,
                     Marca = maquina.Marca,
@@ -119,7 +119,7 @@ namespace API_Maquinas.Services
 
        
 
-        public async Task<MaquinaDTO> Update(int id, MaquinaUpdateDTO maquinaUpdate)
+        public async Task<MachineDTO> Update(int id, MachineUpdateDTO maquinaUpdate)
         {
             var maquina = await _context.Maquinas.FindAsync(id);
 
@@ -135,7 +135,7 @@ namespace API_Maquinas.Services
                 _context.Maquinas.Update(maquina);
                 await _context.SaveChangesAsync();
 
-                var maquinaDto = new MaquinaDTO
+                var maquinaDto = new MachineDTO
                 {
                     id = maquina.Id,
                     Marca = maquina.Marca,

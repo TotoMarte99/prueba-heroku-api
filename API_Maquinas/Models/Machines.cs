@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API_Maquinas.Models
 {
-    public class Maquinas
+    public class Machines
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Column(TypeName = "varchar(50)")]  //Asi defino el tipo de valor que entra en la tabla.
+        [Column(TypeName = "varchar(50)")]  
         public string Marca { get; set; }
 
-        [Column(TypeName = "varchar(50)")]  //Asi defino el tipo de valor que entra en la tabla.
+        [Column(TypeName = "varchar(50)")]  
         public string Modelo { get; set; }
 
-        [Column(TypeName = "varchar(50)")]  //Asi defino el tipo de valor que entra en la tabla.
+        [Column(TypeName = "varchar(50)")]  
         public string Tipo { get; set; }
 
         [Column(TypeName = "int")]

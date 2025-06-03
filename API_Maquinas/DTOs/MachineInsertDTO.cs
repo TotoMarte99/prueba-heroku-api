@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace API_Maquinas.DTOs
 {
-    public class MaquinaInsertDTO
+    public class MachineInsertDTO
     {
         [Required(ErrorMessage ="La marca es obligatoria")]
         [StringLength(50, ErrorMessage = "La marca no puede superar los 50 caracteres.")]

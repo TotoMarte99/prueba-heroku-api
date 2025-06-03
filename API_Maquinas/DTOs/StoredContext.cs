@@ -9,8 +9,9 @@ namespace API_Maquinas.DTOs
     {
         public StoredContext(DbContextOptions<StoredContext> options) : base(options) { }
 
+        public DbSet<Machines> Maquinas { get; set; }
 
-        public DbSet<Maquinas> Maquinas { get; set; }
+        public DbSet<Logins> Logins { get; set; }
 
 
     }

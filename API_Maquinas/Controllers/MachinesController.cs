@@ -2,34 +2,43 @@
 using API_Maquinas.Models;
 using API_Maquinas.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API_Maquinas.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class MaquinaController : ControllerBase
-    {
-        private StoredContext _context;
-        private IMaquinaService maqservice;
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
 
-        public MaquinaController(StoredContext context, IMaquinaService _maqservice)
+    public class MachinesController : ControllerBase
+    {
+        private IMachineService maqservice;
+
+        public MachinesController(StoredContext context, IMachineService _maqservice)
         {
-            _context = context;
             maqservice = _maqservice;
 
         }
 
         [HttpGet]
-        public async Task<ActionResult<MaquinaDTO>> GetMaquina()
+        public async Task<ActionResult<MachineDTO>> GetMaquina()
         {
             var maquinas = await maqservice.GetMaquina();
 
             return Ok(maquinas);
         }
+
+
+        //[Authorize(Roles = "usuario,admin")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Maquinas>> GetMaquinaID(int id)
+        public async Task<ActionResult<Machines>> GetMaquinaID(int id)
         {
             var maquina = await maqservice.GetMaquinaID(id);
 
@@ -39,8 +48,9 @@ namespace API_Maquinas.Controllers
             return Ok(maquina);
         }
 
+        [Authorize(Roles = "usuario,admin")]
         [HttpGet("buscar/marca/{marca}")]
-        public async Task<ActionResult<Maquinas>> GetMaquinaMarca(string marca)
+        public async Task<ActionResult<Machines>> GetMaquinaMarca(string marca)
         {
             var maquina = await maqservice.Search(marca);
 
@@ -52,9 +62,9 @@ namespace API_Maquinas.Controllers
             return Ok(maquina);
         }
 
-
+        [Authorize(Roles = "admin")]
         [HttpPost]
-        public async Task<ActionResult<Maquinas>> Add(MaquinaInsertDTO maquinaInsert)
+        public async Task<ActionResult<Machines>> Add(MachineInsertDTO maquinaInsert)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -65,9 +75,10 @@ namespace API_Maquinas.Controllers
 
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{Id}")]
 
-        public async Task<ActionResult<Maquinas>> Delete(int Id)
+        public async Task<ActionResult<Machines>> Delete(int Id)
         {
             var maquina = await maqservice.Delete(Id);
 
@@ -84,8 +95,9 @@ namespace API_Maquinas.Controllers
             return null;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<Maquinas>> Update(int id, MaquinaUpdateDTO maquinaUpdate)
+        public async Task<ActionResult<Machines>> Update(int id, MachineUpdateDTO maquinaUpdate)
         {
             var maquina = await maqservice.Update(id, maquinaUpdate);
 
@@ -98,6 +110,6 @@ namespace API_Maquinas.Controllers
 
         }
 
-        
+       
     }
 }
