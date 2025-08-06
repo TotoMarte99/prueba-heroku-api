@@ -24,6 +24,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IMachineService, MachineService>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<ILoginAuth, LoginAuth>();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureOptions<ConfigureSwagger>();
@@ -57,7 +59,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
     };
 });
 

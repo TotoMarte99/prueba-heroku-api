@@ -23,14 +23,14 @@ namespace API_Maquinas.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<Logins>> GetUsers(string username, string password)
+        public async Task<ActionResult<Logins>> GetUsers([FromBody] LoginDTO loginDto)
         {
-            var token = await loginAuth.GetUsers(username, password);
+            var token = await loginAuth.GetUsers(loginDto.Users, loginDto.PassWord);
 
             if (token == null)
                 return Unauthorized("Credenciales inválidas");
 
-            return Ok(new { token });
+            return Ok(token);
         }
 
 

@@ -25,5 +25,13 @@ namespace API_Maquinas.DTOs
 
         [Range(1, int.MaxValue, ErrorMessage = "El precio debe ser mayor a 0.")]
         public int Precio { get; set; }
+
+        public int Stock { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "El precio debe ser mayor a 0.")]
+
+        public int PrecioVenta { get; set; }
+
+        public DateTime FechaIngreso { get; set; }
+
     }
 }

@@ -26,6 +26,7 @@ namespace API_Maquinas.Controllers
             maqservice = _maqservice;
 
         }
+        [Authorize(Roles = "usuario,admin")]
 
         [HttpGet]
         public async Task<ActionResult<MachineDTO>> GetMaquina()

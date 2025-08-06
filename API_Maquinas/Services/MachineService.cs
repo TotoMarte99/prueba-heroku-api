@@ -23,7 +23,10 @@ namespace API_Maquinas.Services
                 Marca = maquinaInsert.Marca,
                 Modelo = maquinaInsert.Modelo,
                 Tipo = maquinaInsert.Tipo,
-                Precio = maquinaInsert.Precio
+                Precio = maquinaInsert.Precio,
+                Stock = maquinaInsert.Stock,
+                PrecioVenta = maquinaInsert.PrecioVenta,
+                FechaIngreso = maquinaInsert.FechaIngreso
             };
 
             await _context.AddRangeAsync(maquina);
@@ -36,6 +39,9 @@ namespace API_Maquinas.Services
                 Modelo = maquina.Modelo,
                 Tipo = maquina.Tipo,
                 Precio = maquina.Precio,
+                Stock = maquina.Stock,
+                PrecioVenta = maquina.PrecioVenta,
+                FechaIngreso = maquina.FechaIngreso
             };
 
             return maquinaDto;
@@ -51,7 +57,10 @@ namespace API_Maquinas.Services
                     Marca = m.Marca,
                     Modelo = m.Modelo,
                     Tipo = m.Tipo,
-                    Precio = m.Precio
+                    Precio = m.Precio,
+                    Stock = m.Stock,
+                    PrecioVenta = m.PrecioVenta,
+                    FechaIngreso = m.FechaIngreso
                 })
                 .ToListAsync();
 
@@ -71,6 +80,9 @@ namespace API_Maquinas.Services
                     Modelo = maquina.Modelo,
                     Tipo = maquina.Tipo,
                     Precio = maquina.Precio,
+                    Stock = maquina.Stock,
+                    PrecioVenta = maquina.PrecioVenta,
+                    FechaIngreso = maquina.FechaIngreso
                 };
 
                 _context.Maquinas.Remove(maquina);
@@ -92,6 +104,9 @@ namespace API_Maquinas.Services
                 Modelo = b.Modelo,
                 Tipo = b.Tipo,
                 Precio = b.Precio,
+                Stock = b.Stock,
+                PrecioVenta = b.PrecioVenta,
+                FechaIngreso = b.FechaIngreso
             }).ToListAsync();
             
         }
@@ -109,6 +124,9 @@ namespace API_Maquinas.Services
                     Modelo = maquina.Modelo,
                     Tipo = maquina.Tipo,
                     Precio = maquina.Precio,
+                    Stock = maquina.Stock,
+                    PrecioVenta = maquina.PrecioVenta,
+                    FechaIngreso = maquina.FechaIngreso
                 };
 
                 return maquinaDto;
@@ -131,6 +149,9 @@ namespace API_Maquinas.Services
                 maquina.Modelo = maquinaUpdate.Modelo;
                 maquina.Tipo = maquinaUpdate.Tipo;
                 maquina.Precio = maquinaUpdate.Precio;
+                maquina.Stock = maquinaUpdate.Stock;
+                maquina.PrecioVenta = maquinaUpdate.PrecioVenta;
+                maquina.FechaIngreso = maquinaUpdate.FechaIngreso;
 
                 _context.Maquinas.Update(maquina);
                 await _context.SaveChangesAsync();
@@ -142,6 +163,9 @@ namespace API_Maquinas.Services
                     Modelo = maquina.Modelo,
                     Tipo = maquina.Tipo,
                     Precio = maquina.Precio,
+                    Stock = maquina.Stock,
+                    PrecioVenta = maquina.PrecioVenta,
+                    FechaIngreso = maquina.FechaIngreso
                 };
                 return maquinaDto;
 

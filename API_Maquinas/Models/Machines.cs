@@ -20,8 +20,17 @@ namespace API_Maquinas.Models
 
         [Column(TypeName = "int")]
         public int Precio { get; set; }
+        [Column(TypeName = "int")]
 
-        
+        public int Stock { get; set; }
+        [Column(TypeName = "int")]
+
+        public int PrecioVenta { get; set; }
+
+        public DateTime FechaIngreso { get; set; }
+
+
+
 
     }
 }
