@@ -22,6 +22,9 @@ namespace API_Maquinas.Controllers
             this.loginAuth = loginAuth;
         }
 
+
+
+       
         [HttpPost("login")]
         public async Task<ActionResult<Logins>> GetUsers([FromBody] LoginDTO loginDto)
         {
