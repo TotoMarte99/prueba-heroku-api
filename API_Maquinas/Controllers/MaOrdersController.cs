@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
+using iText.Layout.Properties;
 
 namespace API_Maquinas.Controllers
 {
@@ -214,11 +215,22 @@ namespace API_Maquinas.Controllers
                 var empresaInfo = new PdfPCell();
                 empresaInfo.Border = Rectangle.NO_BORDER;
                 empresaInfo.AddElement(new Paragraph("Maquinarias Miguel", titleFont));
-                empresaInfo.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
-                empresaInfo.AddElement(new Paragraph("Rosario, Argentino", normalFont));
-                empresaInfo.AddElement(new Paragraph("Tel: +54 123 456 789", normalFont));
-                empresaInfo.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
-                empresaTable.AddCell(empresaInfo);
+                var direccion = new Paragraph("Ricardo Nuñez 602", normalFont);
+                var ciudad = new Paragraph("Rosario, Argentina", normalFont);
+                var telefono = new Paragraph("Tel: +54 123 456 789", normalFont);
+                var email = new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont);
+
+                // Establece la alineación central para cada párrafo
+                direccion.Alignment = Element.ALIGN_CENTER;
+                ciudad.Alignment = Element.ALIGN_CENTER;
+                telefono.Alignment = Element.ALIGN_CENTER;
+                email.Alignment = Element.ALIGN_CENTER;
+
+                // Añade los párrafos al elemento empresaInfo
+                empresaInfo.AddElement(direccion);
+                empresaInfo.AddElement(ciudad);
+                empresaInfo.AddElement(telefono);
+                empresaInfo.AddElement(email);
 
                 document.Add(empresaTable);
 
@@ -299,6 +311,9 @@ namespace API_Maquinas.Controllers
                 var obsParagraph = new Paragraph(order.Observaciones ?? "Sin observaciones", normalFont);
                 obsParagraph.SpacingAfter = 15;
                 document.Add(obsParagraph);
+
+                var tableObs = new PdfPTable(2) { WidthPercentage = 50, HorizontalAlignment = Element.ALIGN_LEFT };
+                tableObs.SetWidths(new float[] { 1f, 1f });
 
                 // Costos
                 var costosTitle = new Paragraph("Costos", subtitleFont);
