@@ -125,26 +125,43 @@ namespace API_Maquinas.Controllers
             var orden = await _context.MaOrders.FindAsync(id);
 
             if (orden == null)
-                return NotFound();
+                return NotFound(new { Message = "Orden no encontrada." });
 
-            orden.Estado = dto.Estado;  // <<--- importante
-            orden.CostoFinal = dto.CostoFinal;
-
-            if (orden.FechaIngreso.Kind == DateTimeKind.Local)
+            try
             {
-                orden.FechaIngreso = orden.FechaIngreso.ToUniversalTime();
-            }
+                orden.Estado = dto.Estado;
+                orden.CostoFinal = dto.CostoFinal;
 
-            if (orden.FechaEntrega.HasValue && orden.FechaEntrega.Value.Kind == DateTimeKind.Local)
+                // Con la solución anterior, ya deberías tener esto
+                if (orden.FechaIngreso.Kind == DateTimeKind.Local)
+                {
+                    orden.FechaIngreso = orden.FechaIngreso.ToUniversalTime();
+                }
+
+                if (orden.FechaEntrega.HasValue && orden.FechaEntrega.Value.Kind == DateTimeKind.Local)
+                {
+                    orden.FechaEntrega = orden.FechaEntrega.Value.ToUniversalTime();
+                }
+
+                // No es necesario llamar a .Update, EF ya está rastreando el objeto
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Orden actualizada con éxito" });
+            }
+            catch (DbUpdateConcurrencyException)
             {
-                orden.FechaEntrega = orden.FechaEntrega.Value.ToUniversalTime();
+                // En caso de que otra persona haya modificado la orden al mismo tiempo
+                return Conflict(new { Message = "Error de concurrencia: la orden fue modificada por otro usuario." });
             }
-
-            _context.MaOrders.Update(orden);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Orden actualizada con éxito" });
+            catch (Exception ex)
+            {
+                // Captura cualquier otro error y devuelve el mensaje para que podamos depurarlo
+                Console.Error.WriteLine($"Error al actualizar la orden ID {id}: {ex.Message}");
+                return StatusCode(500, new { Message = $"Error al actualizar orden: {ex.Message}" });
+            }
         }
+
+
 
         [Authorize(Roles = "admin,mecanico")]
         [HttpGet("orden/pdf/{id}")]
