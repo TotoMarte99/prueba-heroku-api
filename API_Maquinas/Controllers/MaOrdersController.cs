@@ -162,125 +162,159 @@ namespace API_Maquinas.Controllers
                 Console.Error.WriteLine($"Error al actualizar la orden ID {id}: {ex.Message}");
                 return StatusCode(500, new { Message = $"Error al actualizar orden: {ex.Message}" });
             }
-
-            
         }
 
 
 
         [Authorize(Roles = "admin,mecanico")]
         [HttpGet("orden/pdf/{id}")]
-        public byte[] GenerarPdfMejorado(MaOrder order)
+        public async Task<IActionResult> GenerarOrdenPdf(int id)
         {
+            var order = await _context.MaOrders.FindAsync(id);
+
+            if (order == null)
+                return NotFound(new { Message = $"No se encontró la orden con ID {id}" });
 
             byte[] pdfBytes;
 
             using (var ms = new MemoryStream())
             {
-                var document = new Document(PageSize.A4, 25, 25, 25, 25);
-                PdfWriter.GetInstance(document, ms);
+                var document = new Document(PageSize.A4, 50, 50, 50, 50);
+                var writer = PdfWriter.GetInstance(document, ms);
                 document.Open();
 
-                // Fuentes
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLACK);
-                var subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.BLACK);
-                var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
-                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
-                var grayColor = new BaseColor(64, 64, 64);
+                var blueColor = new BaseColor(0, 70, 140);
+                var grayColor = new BaseColor(240, 240, 240);
 
-                // --- Encabezado ---
-                var headerTable = new PdfPTable(2) { WidthPercentage = 100 };
-                headerTable.SetWidths(new float[] { 2f, 1f });
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20, blueColor);
+                var subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, blueColor);
+                var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 12);
 
-                // Celda de datos de la empresa (alineada a la izquierda)
-                var empresaCell = new PdfPCell() { Border = Rectangle.NO_BORDER, Padding = 5 };
-                empresaCell.AddElement(new Paragraph("Maquinarias Miguel", titleFont));
-                empresaCell.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
-                empresaCell.AddElement(new Paragraph("Rosario, Argentina", normalFont));
-                empresaCell.AddElement(new Paragraph("Tel: +54 123 456 789", normalFont));
-                empresaCell.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
-                headerTable.AddCell(empresaCell);
+                // ---- SECCIÓN EMPRESA ----
+                var empresaTable = new PdfPTable(2) { WidthPercentage = 100 };
+                empresaTable.SetWidths(new float[] { 1f, 3f });
+                empresaTable.SpacingAfter = 20;
 
-                // Celda para el título de la orden y número (alineada a la derecha)
-                var orderTitleCell = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT, Padding = 5 };
-                orderTitleCell.AddElement(new Paragraph("ORDEN DE REPARACIÓN", subtitleFont));
-                orderTitleCell.AddElement(new Paragraph($"Nro. de Orden: {order.Id}", normalFont));
-                orderTitleCell.AddElement(new Paragraph($"Fecha de Ingreso: {order.FechaIngreso:dd/MM/yyyy}", normalFont));
-                headerTable.AddCell(orderTitleCell);
+                // Logo
+                try
+                {
+                    string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Logo", "/Logo/logo.jpg");
+                    var logo = Image.GetInstance(logoPath);
+                    logo.ScaleToFit(100f, 100f);
+                    var logoCell = new PdfPCell(logo) { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_LEFT, VerticalAlignment = Element.ALIGN_MIDDLE };
+                    empresaTable.AddCell(logoCell);
+                }
+                catch
+                {
+                    // Si no se encuentra el logo, poner celda vacía
+                    empresaTable.AddCell(new PdfPCell(new Phrase("")) { Border = Rectangle.NO_BORDER });
+                }
 
-                document.Add(headerTable);
+                // Datos empresa
+                var empresaInfo = new PdfPCell();
+                empresaInfo.Border = Rectangle.NO_BORDER;
+                empresaInfo.AddElement(new Paragraph("Maquinarias Miguel", titleFont));
+                empresaInfo.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
+                empresaInfo.AddElement(new Paragraph("Rosario, Argentino", normalFont));
+                empresaInfo.AddElement(new Paragraph("Tel: +54 123 456 789", normalFont));
+                empresaInfo.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
+                empresaTable.AddCell(empresaInfo);
 
-                // Línea divisoria
-                var hr = new Paragraph(new Chunk(new iTextSharp.text.pdf.draw.LineSeparator(1f, 100f, BaseColor.LIGHT_GRAY, Element.ALIGN_CENTER, 1)));
-                hr.SpacingAfter = 10;
-                document.Add(hr);
+                document.Add(empresaTable);
 
-                // --- Datos del Cliente ---
-                var clienteTitle = new Paragraph("Datos del Cliente", subtitleFont) { SpacingAfter = 5 };
+                // Título principal
+                var title = new Paragraph("Orden de Reparación", titleFont);
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingAfter = 20;
+                document.Add(title);
+
+                // (el resto igual que antes, tabla orden, cliente, máquina, observaciones, costos...)
+
+                // Tabla resumen orden
+                var tableOrden = new PdfPTable(2) { WidthPercentage = 100 };
+                tableOrden.SetWidths(new float[] { 1f, 2f });
+                tableOrden.SpacingAfter = 15;
+
+                tableOrden.AddCell(new PdfPCell(new Phrase("Número de Orden:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableOrden.AddCell(new PdfPCell(new Phrase(order.Id.ToString(), normalFont)) { Padding = 5 });
+
+                tableOrden.AddCell(new PdfPCell(new Phrase("Fecha de Ingreso:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableOrden.AddCell(new PdfPCell(new Phrase(order.FechaIngreso.ToString("dd/MM/yyyy"), normalFont)) { Padding = 5 });
+
+                tableOrden.AddCell(new PdfPCell(new Phrase("Estado:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableOrden.AddCell(new PdfPCell(new Phrase(order.Estado, normalFont)) { Padding = 5 });
+
+              
+
+                document.Add(tableOrden);
+
+                // Datos Cliente
+                var clienteTitle = new Paragraph("Datos del Cliente", subtitleFont);
+                clienteTitle.SpacingAfter = 10;
                 document.Add(clienteTitle);
 
-                var tableCliente = new PdfPTable(4) { WidthPercentage = 100 };
-                tableCliente.SetWidths(new float[] { 1f, 2f, 1f, 2f });
+                var tableCliente = new PdfPTable(2) { WidthPercentage = 100 };
+                tableCliente.SetWidths(new float[] { 1f, 2f });
                 tableCliente.SpacingAfter = 15;
 
-                // Fila 1: Nombre y Teléfono
-                tableCliente.AddCell(CreateLabelCell("Nombre:", labelFont, grayColor));
-                tableCliente.AddCell(CreateDataCell(order.Nombre ?? "-", normalFont));
-                tableCliente.AddCell(CreateLabelCell("Teléfono:", labelFont, grayColor));
-                tableCliente.AddCell(CreateDataCell(order.Telefono ?? "-", normalFont));
+                tableCliente.AddCell(new PdfPCell(new Phrase("Nombre:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableCliente.AddCell(new PdfPCell(new Phrase(order.Nombre, normalFont)) { Padding = 5 });
 
-                // Fila 2: Email y Dirección
-                tableCliente.AddCell(CreateLabelCell("Email:", labelFont, grayColor));
-                tableCliente.AddCell(CreateDataCell(order.Email ?? "-", normalFont));
-                tableCliente.AddCell(CreateLabelCell("Dirección:", labelFont, grayColor));
-                tableCliente.AddCell(CreateDataCell(order.Direccion ?? "-", normalFont));
+                tableCliente.AddCell(new PdfPCell(new Phrase("Teléfono:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableCliente.AddCell(new PdfPCell(new Phrase(order.Telefono ?? "-", normalFont)) { Padding = 5 });
+
+                tableCliente.AddCell(new PdfPCell(new Phrase("Email:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableCliente.AddCell(new PdfPCell(new Phrase(order.Email ?? "-", normalFont)) { Padding = 5 });
+
+                tableCliente.AddCell(new PdfPCell(new Phrase("Dirección:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableCliente.AddCell(new PdfPCell(new Phrase(order.Direccion ?? "-", normalFont)) { Padding = 5 });
 
                 document.Add(tableCliente);
 
-                // --- Detalles de la Máquina ---
-                var maquinaTitle = new Paragraph("Detalles de la Máquina", subtitleFont) { SpacingAfter = 5 };
+                // Detalles Máquina
+                var maquinaTitle = new Paragraph("Detalles de la Máquina", subtitleFont);
+                maquinaTitle.SpacingAfter = 10;
                 document.Add(maquinaTitle);
 
-                var tableMaquina = new PdfPTable(4) { WidthPercentage = 100 };
-                tableMaquina.SetWidths(new float[] { 1f, 2f, 1f, 2f });
+                var tableMaquina = new PdfPTable(2) { WidthPercentage = 100 };
+                tableMaquina.SetWidths(new float[] { 1f, 2f });
                 tableMaquina.SpacingAfter = 15;
 
-                // Fila 1: Marca y Modelo
-                tableMaquina.AddCell(CreateLabelCell("Marca:", labelFont, grayColor));
-                tableMaquina.AddCell(CreateDataCell(order.Marca ?? "-", normalFont));
-                tableMaquina.AddCell(CreateLabelCell("Modelo:", labelFont, grayColor));
-                tableMaquina.AddCell(CreateDataCell(order.Modelo ?? "-", normalFont));
+                tableMaquina.AddCell(new PdfPCell(new Phrase("Marca:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableMaquina.AddCell(new PdfPCell(new Phrase(order.Marca ?? "-", normalFont)) { Padding = 5 });
 
-                // Fila 2: Accesorios
-                tableMaquina.AddCell(CreateLabelCell("Accesorios:", labelFont, grayColor));
-                var accesoriosCell = new PdfPCell(new Phrase(order.Accesorios ?? "-", normalFont)) { Padding = 5, Colspan = 3 };
-                tableMaquina.AddCell(accesoriosCell);
+                tableMaquina.AddCell(new PdfPCell(new Phrase("Modelo:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableMaquina.AddCell(new PdfPCell(new Phrase(order.Modelo ?? "-", normalFont)) { Padding = 5 });
+
+                tableMaquina.AddCell(new PdfPCell(new Phrase("Accesorios:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableMaquina.AddCell(new PdfPCell(new Phrase(order.Accesorios ?? "-", normalFont)) { Padding = 5 });
 
                 document.Add(tableMaquina);
 
-                // --- Descripción del Problema / Observaciones ---
-                var obsTitle = new Paragraph("Descripción del Problema", subtitleFont) { SpacingAfter = 5 };
+                // Observaciones
+                var obsTitle = new Paragraph("Descripción del Problema", subtitleFont);
+                obsTitle.SpacingAfter = 10;
                 document.Add(obsTitle);
-                document.Add(CreateDataCell(order.Observaciones ?? "Sin observaciones", normalFont));
 
-                // --- Costos y Estado ---
-                var costosTitle = new Paragraph("Resumen y Costos", subtitleFont) { SpacingAfter = 5 };
+                var obsParagraph = new Paragraph(order.Observaciones ?? "Sin observaciones", normalFont);
+                obsParagraph.SpacingAfter = 15;
+                document.Add(obsParagraph);
+
+                var tableObs = new PdfPTable(2) { WidthPercentage = 50, HorizontalAlignment = Element.ALIGN_LEFT };
+                tableObs.SetWidths(new float[] { 1f, 1f });
+
+                // Costos
+                var costosTitle = new Paragraph("Costos", subtitleFont);
+                costosTitle.SpacingAfter = 10;
                 document.Add(costosTitle);
 
-                var tableCostos = new PdfPTable(4) { WidthPercentage = 100 };
-                tableCostos.SetWidths(new float[] { 1f, 1.5f, 1f, 1.5f });
+                var tableCostos = new PdfPTable(2) { WidthPercentage = 50, HorizontalAlignment = Element.ALIGN_LEFT };
+                tableCostos.SetWidths(new float[] { 1f, 1f });
 
-                // Fila 1: Estado y Costo Estimado
-                tableCostos.AddCell(CreateLabelCell("Estado:", labelFont, grayColor));
-                tableCostos.AddCell(CreateDataCell(order.Estado, normalFont));
-                tableCostos.AddCell(CreateLabelCell("Costo Estimado:", labelFont, grayColor));
-                tableCostos.AddCell(CreateDataCell(order.CostoEstimado.HasValue ? order.CostoEstimado.Value.ToString("C") : "Pendiente", normalFont));
-
-                // Fila 2: Fecha de Entrega y Costo Final
-                tableCostos.AddCell(CreateLabelCell("Fecha de Entrega:", labelFont, grayColor));
-                tableCostos.AddCell(CreateDataCell(order.FechaEntrega.HasValue ? order.FechaEntrega.Value.ToString("dd/MM/yyyy") : "Pendiente", normalFont));
-                tableCostos.AddCell(CreateLabelCell("Costo Final:", labelFont, grayColor));
-                tableCostos.AddCell(CreateDataCell(order.CostoFinal.HasValue ? order.CostoFinal.Value.ToString("C") : "Pendiente", normalFont));
+                
+                tableCostos.AddCell(new PdfPCell(new Phrase("Costo Final:", labelFont)) { BackgroundColor = grayColor, Padding = 5 });
+                tableCostos.AddCell(new PdfPCell(new Phrase(order.CostoFinal.HasValue ? order.CostoFinal.Value.ToString("C") : "Pendiente", normalFont)) { Padding = 5 });
 
                 document.Add(tableCostos);
 
@@ -288,18 +322,9 @@ namespace API_Maquinas.Controllers
                 pdfBytes = ms.ToArray();
             }
 
-            return pdfBytes;
+            return File(pdfBytes, "application/pdf", $"Orden_{order.Id}.pdf");
         }
 
-        // Métodos auxiliares para simplificar la creación de celdas
-        private PdfPCell CreateLabelCell(string text, Font font, BaseColor bgColor)
-        {
-            return new PdfPCell(new Phrase(text, font)) { BackgroundColor = bgColor, Padding = 5, BorderColor = BaseColor.WHITE };
-        }
 
-        private PdfPCell CreateDataCell(string text, Font font)
-        {
-            return new PdfPCell(new Phrase(text, font)) { Padding = 5, BorderColor = BaseColor.WHITE };
-        }
     }
 }
