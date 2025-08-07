@@ -31,7 +31,7 @@ namespace API_Maquinas.DTOs
 
         public int PrecioVenta { get; set; }
 
-        public DateTime FechaIngreso { get; set; }
+        public DateTime FechaIngreso { get; set; } = DateTime.UtcNow;
 
     }
 }
