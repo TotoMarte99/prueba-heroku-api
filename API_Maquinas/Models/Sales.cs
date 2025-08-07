@@ -12,7 +12,7 @@ namespace API_Maquinas.Models
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
         //olumn(TypeName = "varchar(100)")]
-        //blic string ClienteNombre { get; set; }
+        //public string ClienteNombre { get; set; }
 
         public int? ClienteId { get; set; }
 

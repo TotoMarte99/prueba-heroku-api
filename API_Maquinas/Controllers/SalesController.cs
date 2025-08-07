@@ -34,7 +34,6 @@ namespace API_Maquinas.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearVenta([FromBody] VentaFormDTO ventaDto)
         {
-            // 1. Validar la entrada del DTO
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -66,6 +65,7 @@ namespace API_Maquinas.Controllers
                 clienteParaVenta.Telefono = ventaDto.Cliente.Telefono;
                 clienteParaVenta.Email = ventaDto.Cliente.Email;
                 clienteParaVenta.Direccion = ventaDto.Cliente.Direccion;
+                clienteParaVenta.FechaRegistro = ventaDto.Fecha;
                 _context.Clientes.Update(clienteParaVenta);
             }
             else
@@ -77,7 +77,7 @@ namespace API_Maquinas.Controllers
                     Telefono = ventaDto.Cliente.Telefono,
                     Email = ventaDto.Cliente.Email,
                     Direccion = ventaDto.Cliente.Direccion,
-                    FechaRegistro = DateTime.UtcNow
+                    //FechaRegistro = DateTime.UtcNow
                 };
                 _context.Clientes.Add(clienteParaVenta);
             }
@@ -85,8 +85,8 @@ namespace API_Maquinas.Controllers
             await _context.SaveChangesAsync();
 
 
-            decimal totalVentaCalculado = 0; // Variable para acumular el total
-            var saleItems = new List<SaleItem>(); // Lista para los ítems de venta
+            decimal totalVentaCalculado = 0; 
+            var saleItems = new List<SaleItem>();
 
             foreach (var itemDto in ventaDto.Items)
             {
@@ -97,44 +97,41 @@ namespace API_Maquinas.Controllers
                 if (producto.Stock < itemDto.Cantidad)
                     return BadRequest($"Stock insuficiente para el producto {producto.Marca} {producto.Modelo}. Stock disponible: {producto.Stock}, solicitado: {itemDto.Cantidad}.");
 
-                totalVentaCalculado += producto.PrecioVenta * itemDto.Cantidad; // Sumamos al total
+                totalVentaCalculado += producto.PrecioVenta * itemDto.Cantidad;
 
                 producto.Stock -= itemDto.Cantidad;
-                _context.Maquinas.Update(producto); // Marcar para actualización
+                _context.Maquinas.Update(producto);
 
                 saleItems.Add(new SaleItem
                 {
                     ProductoId = itemDto.ProductoId,
                     Cantidad = itemDto.Cantidad,
-                    precioUnitario = producto.PrecioVenta // Guardamos el precio unitario del producto en el momento de la venta
+                    precioUnitario = producto.PrecioVenta
                 });
             }
 
 
 
-            // --- 4. Crear la entidad de Venta Principal ---
+            
             var venta = new Sales
             {
-                Fecha = DateTime.UtcNow, // La fecha de la venta se genera en el backend
-                TotalVenta = totalVentaCalculado, // Asignamos el total calculado
-                ClienteId = clienteParaVenta.Id, // Vinculamos la venta al ID del cliente gestionado
-                Items = saleItems // Asignamos los ítems de venta
+                Fecha = DateTime.UtcNow, 
+                TotalVenta = totalVentaCalculado, 
+                ClienteId = clienteParaVenta.Id, 
+                Items = saleItems 
             };
 
             foreach (var item in venta.Items)
             {
-                item.Sale = venta; // Esto hace que EF entienda la relación correctamente
+                item.Sale = venta; 
             }
 
 
-            // 🔧 Usamos _context.Ventas como en tu código original
-            _context.Ventas.Add(venta); // Añadir la nueva venta al contexto
 
-            // --- 5. Guardar todos los cambios en la base de datos ---
-            // Esto guardará la nueva venta, sus ítems, actualizará el stock de productos y el cliente (si fue modificado/creado)
+            _context.Ventas.Add(venta); 
+            
             await _context.SaveChangesAsync();
 
-            // Retornamos el ID de la venta, como en tu implementación original
             return Ok(venta.Id);
         }
 
