@@ -19,7 +19,7 @@ namespace API_Maquinas.Models
 
         [Required]
         [Column(TypeName = "decimal(18,2)")] 
-        public decimal precioUnitario { get; set; }
+        public decimal PrecioUnitario { get; set; }
 
 
         [ForeignKey("ProductoId")]
