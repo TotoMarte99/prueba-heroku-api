@@ -113,7 +113,7 @@ namespace API_Maquinas.Controllers
             // --- 4. Crear la entidad de Venta Principal ---
             var venta = new Sales
             {
-                Fecha = DateTime.Now, // La fecha de la venta se genera en el backend
+                Fecha = DateTime.UtcNow, // La fecha de la venta se genera en el backend
                 TotalVenta = totalVentaCalculado, // Asignamos el total calculado
                 ClienteId = clienteParaVenta.Id, // Vinculamos la venta al ID del cliente gestionado
                 Items = saleItems // Asignamos los ítems de venta
