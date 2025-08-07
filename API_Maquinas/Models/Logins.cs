@@ -7,10 +7,10 @@ namespace API_Maquinas.Models
         public int Id { get; set; }
         [Column(TypeName = "varchar(50)")]
         public string Users { get; set; }
-        [Column(TypeName = "varchar(50)")]
+        [Column(TypeName = "varchar(100)")]
         public string PassWord { get; set; }
 
-        [Column(TypeName = "varchar(20)")]
+        [Column(TypeName = "varchar(50)")]
         public string Rol { get; set; } 
     }
 }
