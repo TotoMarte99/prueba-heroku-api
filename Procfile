@@ -1,1 +1,1 @@
-web: dotnet API_Maquinas.dll
+web: cd API_Maquinas/bin/publish; ./API_Maquinas --urls http://*:$PORT
