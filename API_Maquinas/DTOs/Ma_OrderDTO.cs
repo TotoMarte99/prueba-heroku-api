@@ -20,8 +20,8 @@
         public string Observaciones { get; set; } = string.Empty;
 
         // Fechas
-        public DateTime FechaIngreso { get; set; }
-        public DateTime? FechaEntrega { get; set; }
+        public DateTime FechaIngreso { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaEntrega { get; set; } = DateTime.UtcNow;
 
         // Estado y costos
         public string Estado { get; set; } = "Pendiente"; // Pendiente / En reparación / Finalizado

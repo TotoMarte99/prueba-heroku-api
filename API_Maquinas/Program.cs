@@ -65,6 +65,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 builder.Services.AddDbContext<StoredContext>(options =>
 {
     // Obtener la cadena de conexión de la variable de entorno de Heroku
@@ -90,6 +92,8 @@ builder.Services.AddDbContext<StoredContext>(options =>
         var pgPort = pgHostPort.Split(":")[1];
 
         connStr = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};SSL Mode=Require;Trust Server Certificate=true";
+
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         // Usar el proveedor de PostgreSQL
         options.UseNpgsql(connStr);
