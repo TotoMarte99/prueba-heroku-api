@@ -101,6 +101,8 @@ namespace API_Maquinas.Controllers
                 Telefono = dto.Telefono,
                 Observaciones = dto.Observaciones,
                 Marca = dto.Marca,
+                Email = dto.Email, 
+                Direccion = dto.Direccion,
                 Modelo = dto.Modelo,
                 Accesorios = dto.Accesorios,
                 Estado = "Pendiente",
