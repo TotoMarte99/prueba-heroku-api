@@ -64,13 +64,36 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
-
 builder.Services.AddDbContext<StoredContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("StoreConnection"));
+    // Obtener la cadena de conexión de la variable de entorno de Heroku
+    var connStr = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    // Si no existe, usar la cadena de conexión local
+    if (connStr is null)
+    {
+        connStr = builder.Configuration.GetConnectionString("StoreConnection");
+        options.UseSqlServer(connStr);
+    }
+    else
+    {
+        // Convertir la URL de la base de datos de Heroku en una cadena de conexión
+        connStr = connStr.Replace("postgres://", string.Empty);
+        var pgUserPass = connStr.Split("@")[0];
+        var pgHostPortDb = connStr.Split("@")[1];
+        var pgHostPort = pgHostPortDb.Split("/")[0];
+        var pgDb = pgHostPortDb.Split("/")[1];
+        var pgUser = pgUserPass.Split(":")[0];
+        var pgPass = pgUserPass.Split(":")[1];
+        var pgHost = pgHostPort.Split(":")[0];
+        var pgPort = pgHostPort.Split(":")[1];
+
+        connStr = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};SSL Mode=Require;Trust Server Certificate=true";
+
+        // Usar el proveedor de PostgreSQL
+        options.UseNpgsql(connStr);
+    }
 });
-
-
 var app = builder.Build();
 
 var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
