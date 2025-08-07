@@ -77,7 +77,7 @@ namespace API_Maquinas.Controllers
                     Telefono = ventaDto.Cliente.Telefono,
                     Email = ventaDto.Cliente.Email,
                     Direccion = ventaDto.Cliente.Direccion,
-                    FechaRegistro = DateTime.Now
+                    FechaRegistro = DateTime.UtcNow
                 };
                 _context.Clientes.Add(clienteParaVenta);
             }

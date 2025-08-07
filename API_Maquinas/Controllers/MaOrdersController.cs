@@ -105,7 +105,7 @@ namespace API_Maquinas.Controllers
                 Accesorios = dto.Accesorios,
                 Estado = "Pendiente",
                 CostoEstimado = dto.CostoEstimado,
-                FechaIngreso = DateTime.Now
+                FechaIngreso = DateTime.UtcNow
             };
 
             _context.MaOrders.Add(nuevaOrden);

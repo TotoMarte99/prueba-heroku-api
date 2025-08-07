@@ -24,7 +24,7 @@ namespace API_Maquinas.Models
         [MaxLength(200)]
         public string? Direccion { get; set; } 
 
-        public DateTime FechaRegistro { get; set; } = DateTime.Now;
+        public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
     }
 }
 

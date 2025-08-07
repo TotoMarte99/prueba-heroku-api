@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BCrypt.Net;
 
 namespace API_Maquinas.Services
 {
@@ -27,6 +28,11 @@ namespace API_Maquinas.Services
 
             if (user == null)
                 return null;
+           
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PassWord))
+            {
+                return null;
+            }
 
             var claims = new[]
             {
@@ -61,7 +67,9 @@ namespace API_Maquinas.Services
         {
             var user_exist = await _context.Logins.AnyAsync(u => u.Users == dto.Users);
             if (user_exist)
-                return false; 
+                return false;
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.PassWord);
 
             var newUser = new Logins
             {
