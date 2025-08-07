@@ -110,6 +110,8 @@ namespace API_Maquinas.Controllers
                 });
             }
 
+
+
             // --- 4. Crear la entidad de Venta Principal ---
             var venta = new Sales
             {
@@ -118,6 +120,9 @@ namespace API_Maquinas.Controllers
                 ClienteId = clienteParaVenta.Id, // Vinculamos la venta al ID del cliente gestionado
                 Items = saleItems // Asignamos los ítems de venta
             };
+
+            venta.Fecha = DateTime.Now.ToUniversalTime();
+
 
             // 🔧 Usamos _context.Ventas como en tu código original
             _context.Ventas.Add(venta); // Añadir la nueva venta al contexto
