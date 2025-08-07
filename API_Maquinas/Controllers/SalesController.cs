@@ -121,7 +121,10 @@ namespace API_Maquinas.Controllers
                 Items = saleItems // Asignamos los ítems de venta
             };
 
-            venta.Fecha = DateTime.Now.ToUniversalTime();
+            foreach (var item in venta.Items)
+            {
+                item.Sale = venta; // Esto hace que EF entienda la relación correctamente
+            }
 
 
             // 🔧 Usamos _context.Ventas como en tu código original
