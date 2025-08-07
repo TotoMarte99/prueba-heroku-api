@@ -24,26 +24,19 @@ namespace API_Maquinas.Services
         {
             try
             {
-                // 1. Buscar al usuario SOLO por el nombre de usuario.
                 var user = await _context.Logins
-                   .FirstOrDefaultAsync(u => u.Users == username);
+                    .FirstOrDefaultAsync(u => u.Users == username);
 
-                if (user == null)
-                    return null;
-
-                // 2. Usar BCrypt para verificar si la contraseña ingresada
-                //    coincide con el hash guardado en la base de datos.
-                if (!BCrypt.Net.BCrypt.Verify(password, user.PassWord))
+                if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PassWord))
                 {
                     return null;
                 }
 
-                // Si la verificación pasa, el resto del código es para generar el token
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Name, user.Users),
-                    new Claim(ClaimTypes.Role, user.Rol ?? "usuario")
-                };
+            new Claim(ClaimTypes.Name, user.Users),
+            new Claim(ClaimTypes.Role, user.Rol ?? "usuario")
+        };
 
                 var jwtKey = _configuration["Jwt:Key"];
                 if (string.IsNullOrEmpty(jwtKey))
@@ -56,7 +49,7 @@ namespace API_Maquinas.Services
                     issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.UtcNow.AddHours(1), // 🚨 CORRECCIÓN: Usar UtcNow para evitar errores de fecha
+                    expires: DateTime.UtcNow.AddHours(1),
                     signingCredentials: creds);
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -69,10 +62,9 @@ namespace API_Maquinas.Services
             }
             catch (Exception ex)
             {
-                // 3. 🚨 Nuevo: Capturar la excepción para ver qué está pasando.
-                // Esto nos ayudará a diagnosticar si es un problema de conexión a la DB.
-                Console.Error.WriteLine($"Error en GetUsers: {ex.Message}");
-                // Relanzar la excepción para que el controlador la maneje con un 500
+                // Log the specific exception message.
+                Console.Error.WriteLine($"EXCEPCIÓN en GetUsers: {ex.Message}");
+                // Rethrow the exception to be handled by the controller.
                 throw;
             }
         }
