@@ -60,16 +60,18 @@ namespace API_Maquinas.Controllers
 
             if (clienteParaVenta != null)
             {
+                // Actualizar los datos del cliente existente
                 clienteParaVenta.Nombre = ventaDto.Cliente.Nombre;
                 clienteParaVenta.Apellido = ventaDto.Cliente.Apellido;
                 clienteParaVenta.Telefono = ventaDto.Cliente.Telefono;
                 clienteParaVenta.Email = ventaDto.Cliente.Email;
                 clienteParaVenta.Direccion = ventaDto.Cliente.Direccion;
-                clienteParaVenta.FechaRegistro = ventaDto.Fecha;
+                clienteParaVenta.FechaRegistro = DateTime.UtcNow; // <--- CORRECCIÓN AQUÍ
                 _context.Clientes.Update(clienteParaVenta);
             }
             else
             {
+                // Crear un nuevo cliente
                 clienteParaVenta = new Cliente
                 {
                     Nombre = ventaDto.Cliente.Nombre,
@@ -77,25 +79,29 @@ namespace API_Maquinas.Controllers
                     Telefono = ventaDto.Cliente.Telefono,
                     Email = ventaDto.Cliente.Email,
                     Direccion = ventaDto.Cliente.Direccion,
-                    //FechaRegistro = DateTime.UtcNow
+                    FechaRegistro = DateTime.UtcNow // <--- CORRECCIÓN AQUÍ
                 };
                 _context.Clientes.Add(clienteParaVenta);
             }
 
+            // Se guarda el cliente para que tenga un ID antes de crear la venta
             await _context.SaveChangesAsync();
 
-
-            decimal totalVentaCalculado = 0; 
+            decimal totalVentaCalculado = 0;
             var saleItems = new List<SaleItem>();
 
             foreach (var itemDto in ventaDto.Items)
             {
                 var producto = await _context.Maquinas.FindAsync(itemDto.ProductoId);
                 if (producto == null)
+                {
                     return BadRequest($"Producto con ID {itemDto.ProductoId} no encontrado.");
+                }
 
                 if (producto.Stock < itemDto.Cantidad)
+                {
                     return BadRequest($"Stock insuficiente para el producto {producto.Marca} {producto.Modelo}. Stock disponible: {producto.Stock}, solicitado: {itemDto.Cantidad}.");
+                }
 
                 totalVentaCalculado += producto.PrecioVenta * itemDto.Cantidad;
 
@@ -110,26 +116,21 @@ namespace API_Maquinas.Controllers
                 });
             }
 
-
-
-            
             var venta = new Sales
             {
-                Fecha = DateTime.UtcNow, 
-                TotalVenta = totalVentaCalculado, 
-                ClienteId = clienteParaVenta.Id, 
-                Items = saleItems 
+                Fecha = DateTime.UtcNow, // <--- CORRECCIÓN AQUÍ
+                TotalVenta = totalVentaCalculado,
+                ClienteId = clienteParaVenta.Id,
+                Items = saleItems
             };
 
             foreach (var item in venta.Items)
             {
-                item.Sale = venta; 
+                item.Sale = venta;
             }
 
+            _context.Ventas.Add(venta);
 
-
-            _context.Ventas.Add(venta); 
-            
             await _context.SaveChangesAsync();
 
             return Ok(venta.Id);
