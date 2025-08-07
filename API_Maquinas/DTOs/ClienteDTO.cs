@@ -7,10 +7,10 @@ namespace API_Maquinas.DTOs
         public int id { get; set; }
 
         [Required(ErrorMessage = "El nombre del cliente es requerido.")]
-        public string Nombre { get; set; } = string.Empty; 
+        public string? Nombre { get; set; } = string.Empty; 
 
-        //[Required(ErrorMessage = "El apellido del cliente es requerido.")]
-        public string Apellido { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El apellido del cliente es requerido.")]
+        public string? Apellido { get; set; } = string.Empty;
 
         public string? Telefono { get; set; }
 
