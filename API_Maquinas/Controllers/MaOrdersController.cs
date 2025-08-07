@@ -130,6 +130,16 @@ namespace API_Maquinas.Controllers
             orden.Estado = dto.Estado;  // <<--- importante
             orden.CostoFinal = dto.CostoFinal;
 
+            if (orden.FechaIngreso.Kind == DateTimeKind.Local)
+            {
+                orden.FechaIngreso = orden.FechaIngreso.ToUniversalTime();
+            }
+
+            if (orden.FechaEntrega.HasValue && orden.FechaEntrega.Value.Kind == DateTimeKind.Local)
+            {
+                orden.FechaEntrega = orden.FechaEntrega.Value.ToUniversalTime();
+            }
+
             _context.MaOrders.Update(orden);
             await _context.SaveChangesAsync();
 
