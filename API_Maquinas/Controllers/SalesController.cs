@@ -112,7 +112,7 @@ namespace API_Maquinas.Controllers
                 {
                     ProductoId = itemDto.ProductoId,
                     Cantidad = itemDto.Cantidad,
-                    precioUnitario = producto.PrecioVenta
+                    PrecioUnitario = producto.PrecioVenta
                 });
             }
 
@@ -222,7 +222,7 @@ namespace API_Maquinas.Controllers
                 {
                     var producto = item.Producto?.Marca ?? "Producto no disponible";
                     var cantidad = item.Cantidad;
-                    var precioUnitario = item.precioUnitario;
+                    var precioUnitario = item.PrecioUnitario;
 
                     table.AddCell(new PdfPCell(new Phrase(producto, normalFont)));
                     table.AddCell(new PdfPCell(new Phrase(cantidad.ToString(), normalFont)));
