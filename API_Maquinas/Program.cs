@@ -64,6 +64,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 });
+
 builder.Services.AddDbContext<StoredContext>(options =>
 {
     // Obtener la cadena de conexión de la variable de entorno de Heroku
