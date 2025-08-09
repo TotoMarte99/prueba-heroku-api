@@ -219,7 +219,7 @@ namespace API_Maquinas.Controllers
                 document.Add(headerTable);
 
                 // 5. Línea separadora y datos del cliente.
-                document.Add(new Paragraph("----------------------------------------------------------------------------------------------------------------------------------"));
+                document.Add(new Paragraph("--------------------------------------------------------------------------------------------------------------------------------"));
                 document.Add(new Paragraph("Datos del Cliente", subtitleFont));
                 document.Add(new Paragraph($"Nombre: {venta.Cliente?.Nombre ?? "N/A"}", normalFont));
                 document.Add(new Paragraph($"Dirección: {venta.Cliente?.Direccion ?? "N/A"}", normalFont));

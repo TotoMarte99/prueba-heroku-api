@@ -292,6 +292,18 @@ namespace API_Maquinas.Controllers
 
                 document.Add(footerTable);
 
+                // 6. Sección de Términos y Condiciones
+                // Se usa un texto más pequeño para el footer.
+                document.Add(new Paragraph("Términos y Condiciones", sectionTitleFont) { SpacingBefore = 30 });
+                string terminosTexto = @"
+               Maquinarias Miguel no se hará responsable por la pérdida, extravío o hurto del equipo luego de 30 días de haber notificado al cliente la finalización de la reparación o la elaboración del presupuesto. El cliente acepta que el equipo será reparado con repuestos originales o alternativos de igual calidad, según la disponibilidad. El plazo de garantía sobre la reparación es de 90 días, aplicable únicamente a los trabajos realizados y repuestos instalados en esta orden. Pasados los 30 días de la notificación de finalización, la empresa cobrará un cargo diario por almacenaje.
+
+                ";
+                var terminosParagraph = new Paragraph(terminosTexto.Trim());
+                terminosParagraph.Alignment = Element.ALIGN_JUSTIFIED;
+                document.Add(terminosParagraph);
+
+
                 document.Close();
                 var pdfBytes = ms.ToArray();
                 return File(pdfBytes, "application/pdf", $"Orden_{order.Id}.pdf");
