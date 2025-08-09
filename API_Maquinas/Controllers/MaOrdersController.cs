@@ -204,19 +204,19 @@ namespace API_Maquinas.Controllers
                 var leftCell = new PdfPCell() { Border = Rectangle.NO_BORDER };
 
                 // Lógica para el logo
-             //   var logoParagraph = new Paragraph();
-             //   try
-             //   {
-             //       string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Logo", "logo.jpg");
-             //       if (System.IO.File.Exists(logoPath))
-              //      {
-             //           var logo = Image.GetInstance(logoPath);
-              //          logo.ScaleToFit(120f, 120f);
-              //          logoParagraph.Add(new Chunk(logo, 0, 0, true));
-             //       }
-            //    }
-           //     catch { /* Manejo de error del logo */ }
-          //      leftCell.AddElement(logoParagraph);
+               var logoParagraph = new Paragraph();
+              try
+              {
+                   string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Logo", "logo.jpg");
+                   if (System.IO.File.Exists(logoPath))
+                    {
+                       var logo = Image.GetInstance(logoPath);
+                        logo.ScaleToFit(120f, 120f);
+                        logoParagraph.Add(new Chunk(logo, 0, 0, true));
+                   }
+               }
+               catch { /* Manejo de error del logo */ }
+               leftCell.AddElement(logoParagraph);
 
                 // Datos de la empresa
                 leftCell.AddElement(new Paragraph("Maquinarias Miguel", mainTitleFont) { SpacingBefore = 10 });
@@ -235,7 +235,6 @@ namespace API_Maquinas.Controllers
 
                 headerTable.AddCell(rightCell);
 
-                document.Add(headerTable);
                 document.Add(headerTable);
 
                 // 4. Datos de la Orden, Cliente y Máquina.
