@@ -194,38 +194,48 @@ namespace API_Maquinas.Controllers
                 var labelFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 11, darkGrayColor);
                 var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 11);
 
-                // 3. Encabezado: Logo y datos de la empresa en una tabla para alineación.
+                // 2. Encabezado en dos columnas.
+                // Se usa una única tabla para toda la sección de encabezado.
                 var headerTable = new PdfPTable(2) { WidthPercentage = 100 };
-                headerTable.SetWidths(new float[] { 2f, 4f });
+                headerTable.SetWidths(new float[] { 3f, 2f }); // Columna izquierda más ancha para datos de la empresa, derecha para la orden
                 headerTable.SpacingAfter = 20;
 
+                // ---- COLUMNA IZQUIERDA: LOGO y Datos de la Empresa ----
+                var leftCell = new PdfPCell() { Border = Rectangle.NO_BORDER };
+
                 // Lógica para el logo
-                var logoCell = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER };
+                var logoParagraph = new Paragraph();
                 try
                 {
-                    // Se mejora la forma de obtener la ruta y se verifica su existencia
                     string logoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Logo", "logo.jpg");
                     if (System.IO.File.Exists(logoPath))
                     {
                         var logo = Image.GetInstance(logoPath);
                         logo.ScaleToFit(120f, 120f);
-                        logoCell.AddElement(logo);
+                        logoParagraph.Add(new Chunk(logo, 0, 0, true));
                     }
                 }
-                catch { /* Si hay un error, la celda queda vacía como estaba previsto */ }
-                headerTable.AddCell(logoCell);
+                catch { /* Manejo de error del logo */ }
+                leftCell.AddElement(logoParagraph);
 
-                // Datos de la empresa y la orden
-                var empresaInfoCell = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT };
-                empresaInfoCell.AddElement(new Paragraph("Maquinarias Miguel", mainTitleFont));
-                empresaInfoCell.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
-                empresaInfoCell.AddElement(new Paragraph("Rosario, Santa Fe, Argentina", normalFont));
-                empresaInfoCell.AddElement(new Paragraph("Tel: +54 9 341 610-5083", normalFont));
-                empresaInfoCell.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
-                empresaInfoCell.AddElement(new Paragraph($"Orden de Reparación N°: {order.Id}", sectionTitleFont));
-                empresaInfoCell.AddElement(new Paragraph($"Fecha de Ingreso: {order.FechaIngreso:dd/MM/yyyy}", normalFont));
+                // Datos de la empresa
+                leftCell.AddElement(new Paragraph("Maquinarias Miguel", mainTitleFont) { SpacingBefore = 10 });
+                leftCell.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
+                leftCell.AddElement(new Paragraph("Rosario, Santa Fe, Argentina", normalFont));
+                leftCell.AddElement(new Paragraph("Tel: +54 9 341 610-5083", normalFont));
+                leftCell.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
 
-                headerTable.AddCell(empresaInfoCell);
+                headerTable.AddCell(leftCell);
+
+                // ---- COLUMNA DERECHA: Título y Datos de la Orden ----
+                var rightCell = new PdfPCell() { Border = Rectangle.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT };
+                rightCell.AddElement(new Paragraph("ORDEN DE REPARACIÓN", mainTitleFont));
+                rightCell.AddElement(new Paragraph($"N°: {order.Id}", sectionTitleFont));
+                rightCell.AddElement(new Paragraph($"Fecha de Ingreso: {order.FechaIngreso:dd/MM/yyyy}", normalFont));
+
+                headerTable.AddCell(rightCell);
+
+                document.Add(headerTable);
                 document.Add(headerTable);
 
                 // 4. Datos de la Orden, Cliente y Máquina.
