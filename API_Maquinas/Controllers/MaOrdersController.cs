@@ -216,8 +216,8 @@ namespace API_Maquinas.Controllers
                 empresaInfo.Border = Rectangle.NO_BORDER;
                 empresaInfo.AddElement(new Paragraph("Maquinarias Miguel", titleFont));
                 empresaInfo.AddElement(new Paragraph("Ricardo Nuñez 602", normalFont));
-                empresaInfo.AddElement(new Paragraph("Rosario, Argentino", normalFont));
-                empresaInfo.AddElement(new Paragraph("Tel: +54 123 456 789", normalFont));
+                empresaInfo.AddElement(new Paragraph("Rosario,Santa Fe, Argentina", normalFont));
+                empresaInfo.AddElement(new Paragraph("Tel: +54 9 341 610-5083", normalFont));
                 empresaInfo.AddElement(new Paragraph("Email: maquinariasmiguel@hotmail.com", normalFont));
                 empresaTable.AddCell(empresaInfo);
 

@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
+using System.Globalization;
 
 namespace API_Maquinas.Controllers
 {
@@ -184,61 +185,117 @@ namespace API_Maquinas.Controllers
 
             using (var ms = new MemoryStream())
             {
-                var document = new Document();
+                // Se define el tamaño de la página (A4) y los márgenes para una mejor presentación.
+                var document = new Document(PageSize.A4, 40, 40, 40, 40);
                 PdfWriter.GetInstance(document, ms);
                 document.Open();
 
-                // Fuente para títulos
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16);
-                var subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12);
-                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+                // 3. Definición de estilos y fuentes.
+                // Se centraliza la creación de fuentes para mantener la consistencia.
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+                var subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.BLACK);
+                var normalFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+                var headerTableFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
 
-                // Sección Datos Empresa (manual)
-                document.Add(new Paragraph("Nombre de la Empresa S.A.", titleFont));
-                document.Add(new Paragraph("Dirección: Calle Falsa 123, Ciudad, País", normalFont));
-                document.Add(new Paragraph("Teléfono: +54 9 1234 5678", normalFont));
-                document.Add(new Paragraph("Email: contacto@empresa.com", normalFont));
+                // 4. Encabezado de la factura con datos de la empresa y la venta.
+                // Se usa una tabla para una mejor alineación del contenido.
+                var headerTable = new PdfPTable(2) { WidthPercentage = 100 };
+                headerTable.SetWidths(new float[] { 3, 2 });
 
-                // Línea separadora
-                var linea = new Chunk(new iTextSharp.text.pdf.draw.VerticalPositionMark());
-                document.Add(new Paragraph("____________________________________________"));
+                // Columna 1: Información de la empresa
+                var companyCell = new PdfPCell(new Phrase("Maquinarias Miguel", titleFont)) { Border = 0 };
+                companyCell.AddElement(new Phrase("Dirección: Ricardo Nuñez 602 - Rosario, Santa Fe, Argentina", normalFont));
+                companyCell.AddElement(new Phrase("Teléfono: +54 9 341 610-5083", normalFont));
+                companyCell.AddElement(new Phrase("Email: maquinariasmiguel@hotmail.com", normalFont));
+                headerTable.AddCell(companyCell);
 
-                document.Add(new Paragraph("Factura de Venta", titleFont));
-                document.Add(new Paragraph($"ID Venta: {venta.Id}", subtitleFont));
-                document.Add(new Paragraph($"Fecha: {venta.Fecha:dd/MM/yyyy}", normalFont));
-                document.Add(new Paragraph($"Cliente: {venta.Cliente?.Nombre ?? "Sin nombre"}", normalFont));
-                document.Add(new Paragraph($"Teléfono: {venta.Cliente?.Telefono ?? "Sin teléfono"}", normalFont));
-                document.Add(new Paragraph($"Email: {venta.Cliente?.Email ?? "Sin email"}", normalFont));
-                document.Add(new Paragraph($"Dirección: {venta.Cliente?.Direccion ?? "Sin dirección"}", normalFont));
-                document.Add(new Paragraph(" ")); // línea vacía
+                // Columna 2: Título y detalles de la factura
+                var invoiceCell = new PdfPCell() { Border = 0, HorizontalAlignment = Element.ALIGN_RIGHT };
+                invoiceCell.AddElement(new Paragraph("FACTURA", titleFont));
+                invoiceCell.AddElement(new Paragraph($"Nro. Venta: {venta.Id}", subtitleFont));
+                invoiceCell.AddElement(new Paragraph($"Fecha: {venta.Fecha:dd/MM/yyyy}", normalFont));
+                headerTable.AddCell(invoiceCell);
 
-                // Tabla con productos
-                var table = new PdfPTable(3) { WidthPercentage = 100 };
-                table.AddCell(new PdfPCell(new Phrase("Producto", subtitleFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
-                table.AddCell(new PdfPCell(new Phrase("Cantidad", subtitleFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
-                table.AddCell(new PdfPCell(new Phrase("Precio Unitario", subtitleFont)) { BackgroundColor = BaseColor.LIGHT_GRAY });
+                document.Add(headerTable);
 
+                // 5. Línea separadora y datos del cliente.
+                document.Add(new Paragraph("----------------------------------------------------------------------------------------------------------------------------------"));
+                document.Add(new Paragraph("Datos del Cliente", subtitleFont));
+                document.Add(new Paragraph($"Nombre: {venta.Cliente?.Nombre ?? "N/A"}", normalFont));
+                document.Add(new Paragraph($"Dirección: {venta.Cliente?.Direccion ?? "N/A"}", normalFont));
+                document.Add(new Paragraph($"Teléfono: {venta.Cliente?.Telefono ?? "N/A"}", normalFont));
+                document.Add(new Paragraph($"Email: {venta.Cliente?.Email ?? "N/A"}", normalFont));
+                document.Add(new Paragraph(" "));
+
+                // 6. Tabla de productos.
+                // Se agrega una columna para el subtotal de cada producto.
+                var productTable = new PdfPTable(4) { WidthPercentage = 100 };
+                productTable.SetWidths(new float[] { 4, 1, 2, 2 });
+
+                // Celdas de encabezado con estilo para mayor visibilidad.
+                productTable.AddCell(CreateHeaderCell("Producto", headerTableFont, BaseColor.DARK_GRAY));
+                productTable.AddCell(CreateHeaderCell("Cantidad", headerTableFont, BaseColor.DARK_GRAY, Element.ALIGN_CENTER));
+                productTable.AddCell(CreateHeaderCell("Precio Unitario", headerTableFont, BaseColor.DARK_GRAY, Element.ALIGN_RIGHT));
+                productTable.AddCell(CreateHeaderCell("Subtotal", headerTableFont, BaseColor.DARK_GRAY, Element.ALIGN_RIGHT));
+
+                // Se rellenan los datos de la tabla.
                 foreach (var item in venta.Items)
                 {
-                    var producto = item.Producto?.Marca ?? "Producto no disponible";
-                    var cantidad = item.Cantidad;
-                    var precioUnitario = item.PrecioUnitario;
+                    var productoNombre = item.Producto?.Marca ?? "Producto no disponible";
+                    var subtotal = item.Cantidad * item.PrecioUnitario;
 
-                    table.AddCell(new PdfPCell(new Phrase(producto, normalFont)));
-                    table.AddCell(new PdfPCell(new Phrase(cantidad.ToString(), normalFont)));
-                    table.AddCell(new PdfPCell(new Phrase(precioUnitario.ToString("C"), normalFont)));
+                    productTable.AddCell(CreateDataCell(productoNombre, normalFont));
+                    productTable.AddCell(CreateDataCell(item.Cantidad.ToString(), normalFont, Element.ALIGN_CENTER));
+                    // Se usa CultureInfo para asegurar el formato de moneda correcto (ej. "$").
+                    productTable.AddCell(CreateDataCell(item.PrecioUnitario.ToString("C", new CultureInfo("es-AR")), normalFont, Element.ALIGN_RIGHT));
+                    productTable.AddCell(CreateDataCell(subtotal.ToString("C", new CultureInfo("es-AR")), normalFont, Element.ALIGN_RIGHT));
                 }
-
-                document.Add(table);
-
+                document.Add(productTable);
                 document.Add(new Paragraph(" "));
-                document.Add(new Paragraph($"Total Venta: {venta.TotalVenta:C}", subtitleFont));
+
+                // 7. Resumen de totales.
+                // Otra tabla para alinear el total a la derecha.
+                var totalTable = new PdfPTable(2) { WidthPercentage = 100 };
+                totalTable.SetWidths(new float[] { 7, 3 });
+                totalTable.AddCell(CreateTotalCell("Total de la Venta:", subtitleFont, Element.ALIGN_RIGHT));
+                totalTable.AddCell(CreateTotalCell(venta.TotalVenta.ToString("C", new CultureInfo("es-AR")), subtitleFont, Element.ALIGN_RIGHT));
+                document.Add(totalTable);
 
                 document.Close();
-                pdfBytes = ms.ToArray();
-            }
 
-            return File(pdfBytes, "application/pdf", $"Factura_{ventaId}.pdf");
+                // 8. Retorno del archivo PDF.
+                return File(ms.ToArray(), "application/pdf", $"Factura_{ventaId}.pdf");
+            }
+        }
+
+        // Métodos auxiliares para crear celdas de forma reutilizable y limpia.
+        private PdfPCell CreateHeaderCell(string text, Font font, BaseColor color, int alignment = Element.ALIGN_LEFT)
+        {
+            return new PdfPCell(new Phrase(text, font))
+            {
+                BackgroundColor = color,
+                HorizontalAlignment = alignment,
+                Padding = 5
+            };
+        }
+
+        private PdfPCell CreateDataCell(string text, Font font, int alignment = Element.ALIGN_LEFT)
+        {
+            return new PdfPCell(new Phrase(text, font))
+            {
+                HorizontalAlignment = alignment,
+                Padding = 5
+            };
+        }
+
+        private PdfPCell CreateTotalCell(string text, Font font, int alignment)
+        {
+            return new PdfPCell(new Phrase(text, font))
+            {
+                Border = 0,
+                HorizontalAlignment = alignment,
+                Padding = 5
+            };
         }
     }
 }
